@@ -1,30 +1,59 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Card from './Card';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={ logo } className="App-logo" alt="logo" />
-        <p>
-          Edit
-          <code>
-            src/App.js
-          </code>
-          and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+class App extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      dogs: [],
+      dog: {},
+      carregando: true,
+    };
+    this.adicionar = this.adicionar.bind(this);
+    this.fetchDog = this.fetchDog.bind(this);
+  }
+
+  componentDidMount() {
+    this.fetchDog();
+  }
+
+  async fetchDog() {
+    this.setState({ carregando: true },
+      async () => {
+        const f = await (await fetch('https://dog.ceo/api/breeds/image/random')).json();
+        this.setState({
+          dog: f.message,
+          carregando: false,
+        });
+      });
+  }
+
+  adicionar() {
+    this.setState(({ dogs, dog }) => ({
+      dogs: [...dogs, dog],
+    }));
+    this.fetchDog();
+  }
+
+  render() {
+    const { carregando, dog, dogs } = this.state;
+    console.log(dogs);
+    return (
+      <section>
+        <h1>Dog Image</h1>
+        { dogs.length ? dogs.map((i, x) => (<Card key={ x } dog={ i } />)) : '' }
+        { carregando ? <p>Carregando...</p> : <Card dog={ dog } /> }
+        <button
+          disabled={ carregando }
+          type="button"
+          onClick={ this.adicionar }
         >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+          Adicionar
+        </button>
+      </section>
+    );
+  }
 }
 
 export default App;
